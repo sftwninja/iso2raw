@@ -36,7 +36,7 @@ fn mirror_bits(d: u32, bits: usize) -> u32 {
 fn init_crc_table() -> [u32; 256] {
     let mut table = [0u32; 256];
 
-    for i in 0..256 {
+    for (i, entry) in table.iter_mut().enumerate() {
         let mut r = mirror_bits(i as u32, 8);
         r <<= 24;
 
@@ -50,7 +50,7 @@ fn init_crc_table() -> [u32; 256] {
         }
 
         r = mirror_bits(r, 32);
-        table[i] = r;
+        *entry = r;
     }
 
     table
@@ -211,12 +211,12 @@ pub fn calc_p_parity(sector: &mut [u8]) {
         let mut p01_lsb = 0u16;
         let mut p01_msb = 0u16;
 
-        for j in 19..=42 {
+        for table_row in table.iter().skip(19).take(24) {
             let d0 = sector[p_lsb_idx];
             let d1 = sector[p_lsb_idx + 1];
 
-            p01_lsb ^= table[j][d0 as usize];
-            p01_msb ^= table[j][d1 as usize];
+            p01_lsb ^= table_row[d0 as usize];
+            p01_msb ^= table_row[d1 as usize];
 
             p_lsb_idx += 2 * 43;
         }
@@ -244,12 +244,12 @@ pub fn calc_q_parity(sector: &mut [u8]) {
         let mut q01_lsb = 0u16;
         let mut q01_msb = 0u16;
 
-        for j in 0..=42 {
+        for table_row in table.iter().take(43) {
             let d0 = sector[q_lsb_idx];
             let d1 = sector[q_lsb_idx + 1];
 
-            q01_lsb ^= table[j][d0 as usize];
-            q01_msb ^= table[j][d1 as usize];
+            q01_lsb ^= table_row[d0 as usize];
+            q01_msb ^= table_row[d1 as usize];
 
             q_lsb_idx += 2 * 44;
 

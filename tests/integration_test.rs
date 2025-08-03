@@ -14,7 +14,7 @@ fn test_iso_to_raw_conversion() {
 
     // Run the converter
     let output = Command::new("cargo")
-        .args(&["run", "--", test_iso, "-o", test_bin, "-q"])
+        .args(["run", "--", test_iso, "-o", test_bin, "-q"])
         .output()
         .expect("Failed to execute iso2raw");
 

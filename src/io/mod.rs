@@ -20,7 +20,7 @@ impl IsoReader {
         let metadata = file.metadata()?;
         let file_size = metadata.len() as usize;
 
-        if file_size % ISO_SECTOR_SIZE != 0 {
+        if !file_size.is_multiple_of(ISO_SECTOR_SIZE) {
             anyhow::bail!(
                 "Invalid ISO file size: {} is not a multiple of {}",
                 file_size,
