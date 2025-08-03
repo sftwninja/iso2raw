@@ -59,7 +59,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
-          path: ${{ matrix.name }}
+          path: ${{ matrix.os == 'windows-latest' && format('{0}.exe', matrix.name) || matrix.name }}
 
   release:
     name: Create Release
