@@ -47,7 +47,7 @@ fn test_complete_sector_generation() {
     // Print EDC value for debugging
     let edc_bytes = &raw_sector[2064..2068];
     let edc_value = u32::from_le_bytes([edc_bytes[0], edc_bytes[1], edc_bytes[2], edc_bytes[3]]);
-    println!("Generated EDC: 0x{:08X}", edc_value);
+    println!("Generated EDC: 0x{edc_value:08X}");
 
     // Verify ECC bytes are not all zeros
     let ecc_p = &raw_sector[2076..2248];

@@ -128,10 +128,7 @@ fn main() -> Result<()> {
     let mb_per_sec =
         (total_sectors * RAW_SECTOR_SIZE) as f64 / (1024.0 * 1024.0) / elapsed.as_secs_f64();
 
-    println!(
-        "\nConversion completed in {:.2?} ({:.2} MB/s)",
-        elapsed, mb_per_sec
-    );
+    println!("\nConversion completed in {elapsed:.2?} ({mb_per_sec:.2} MB/s)");
     println!("Output file: {}", output_path.display());
 
     Ok(())
