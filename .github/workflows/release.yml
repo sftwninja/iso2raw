@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build Release
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: iso2raw-linux-amd64
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: iso2raw-windows-amd64.exe
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: iso2raw-macos-amd64
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            name: iso2raw-macos-arm64
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Copy binary (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cp target/${{ matrix.target }}/release/iso2raw ${{ matrix.name }}
+
+      - name: Copy binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          copy target\${{ matrix.target }}\release\iso2raw.exe ${{ matrix.name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.name }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create checksums
+        run: |
+          cd artifacts
+          for dir in */; do
+            cd "$dir"
+            sha256sum * > ../checksums-${dir%/}.txt
+            cd ..
+          done
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+          generate_release_notes: true
+          files: |
+            artifacts/*/*
+            artifacts/checksums-*.txt
+          body: |
+            ## iso2raw ${{ github.ref_name }}
+            
+            Fast, multithreaded ISO to RAW (MODE1/2352) converter with proper ECC/EDC calculation.
+            
+            ### Downloads
+            - **Linux (x64)**: `iso2raw-linux-amd64`
+            - **Windows (x64)**: `iso2raw-windows-amd64.exe`  
+            - **macOS Intel**: `iso2raw-macos-amd64`
+            - **macOS Apple Silicon**: `iso2raw-macos-arm64`
+            
+            ### Usage
+            ```bash
+            # Convert ISO to RAW format
+            ./iso2raw input.iso
+            
+            # Specify output file and thread count
+            ./iso2raw input.iso -o output.bin -j 4
+            ```
+            
+            ### Checksums
+            SHA256 checksums are provided for verification.
