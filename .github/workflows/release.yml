@@ -19,7 +19,7 @@ jobs:
             name: iso2raw-linux-amd64
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-            name: iso2raw-windows-amd64.exe
+            name: iso2raw-windows-amd64
           - target: x86_64-apple-darwin
             os: macos-latest
             name: iso2raw-macos-amd64
@@ -53,7 +53,7 @@ jobs:
       - name: Copy binary (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          copy target\${{ matrix.target }}\release\iso2raw.exe ${{ matrix.name }}
+          copy target\${{ matrix.target }}\release\iso2raw.exe ${{ matrix.name }}.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -110,7 +110,7 @@ jobs:
             
             ### Downloads
             - **Linux (x64)**: `iso2raw-linux-amd64.zip`
-            - **Windows (x64)**: `iso2raw-windows-amd64.exe.zip`  
+            - **Windows (x64)**: `iso2raw-windows-amd64.zip`  
             - **macOS Intel**: `iso2raw-macos-amd64.zip`
             - **macOS Apple Silicon**: `iso2raw-macos-arm64.zip`
             
